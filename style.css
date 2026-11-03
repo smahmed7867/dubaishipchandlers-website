@@ -103,3 +103,6 @@ footer{background:#000;color:#888;padding:24px 0;font-size:.82rem}footer .wrap{d
 .note{margin-top:26px;text-align:center;font-size:.8rem;color:var(--mut)}
 @media(max-width:860px){.stock{grid-template-columns:1fr 1fr}.igrid{grid-template-columns:1fr}}
 .nav ul a.on{color:#7fa8ff}
+a.ic{cursor:pointer;color:inherit;transition:background .2s,transform .2s,box-shadow .2s}
+a.ic:hover,a.ic:focus-visible{background:#fff;transform:translateY(-3px);box-shadow:0 10px 24px rgba(0,0,0,.12);outline:2px solid var(--blue)}
+a.ic:hover b{background:var(--blue)}
