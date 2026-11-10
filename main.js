@@ -1,6 +1,7 @@
 (function(){
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 if(reduce||!window.gsap||!window.ScrollTrigger){document.documentElement.classList.add('static');return}
+document.documentElement.classList.add('js');
 gsap.registerPlugin(ScrollTrigger);
 const mm=gsap.matchMedia();
 // 1. Story: forklift -> truck pans right, ghost text, grey->dark
@@ -43,4 +44,36 @@ gsap.from('.ports-s',{yPercent:12,scrollTrigger:{trigger:'.ports-s',start:'top b
 gsap.utils.toArray('.ports-s h2,.why h2,.rfq h2,.region,.why .card').forEach(el=>gsap.from(el,{y:50,opacity:0,duration:.8,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 88%'}}));
 gsap.fromTo('.whyimg',{clipPath:'inset(30% 0 30% 0)'},{clipPath:'inset(0% 0 0% 0)',scrollTrigger:{trigger:'.why',start:'top 80%',end:'top 20%',scrub:true}});
 gsap.fromTo('.whyimg img',{scale:1.3},{scale:1,scrollTrigger:{trigger:'.why',start:'top bottom',end:'bottom top',scrub:true}});
+// IMPA grid: light reveal as rows enter
+ScrollTrigger.batch('.stock > div',{start:'top 90%',once:true,onEnter:batch=>gsap.from(batch,{y:28,opacity:0,duration:.55,stagger:.06,ease:'power2.out'})});
+ScrollTrigger.batch('.ic',{start:'top 92%',once:true,onEnter:batch=>gsap.from(batch,{y:20,opacity:0,duration:.45,stagger:.025,ease:'power2.out'})});
+// Stores: photos start as a tight cluster and spread to the edges while the heading stays pinned behind them.
+const shots=gsap.utils.toArray('.supply .shot');
+function placeShots(p){
+ const vw=innerWidth,vh=innerHeight;
+ shots.forEach(el=>{
+  const w=el.offsetWidth,h=el.offsetHeight;
+  if(!w||!h)return;
+  const cx=+el.dataset.cx,cy=+el.dataset.cy,dx=+el.dataset.dx,dy=+el.dataset.dy,s0=+el.dataset.s,r0=+el.dataset.r;
+  const px=(vw*0.5+dx)+((cx*vw)-(vw*0.5+dx))*p;
+  const py=(vh*0.47+dy)+((cy*vh)-(vh*0.47+dy))*p;
+  gsap.set(el,{x:px-w/2,y:py-h/2,scale:s0+(1-s0)*p,rotation:r0*(1-p),transformOrigin:'50% 50%',force3D:true});
+ });
+ const sub=p<0.18?1:Math.max(0,1-(p-0.18)/0.22);
+ const credit=Math.max(0,(p-0.74)/0.26);
+ gsap.set('.supplysub',{opacity:sub});
+ gsap.set('.supply .shot figcaption',{opacity:Math.max(0,(p-0.58)/0.32)});
+ gsap.set('.photocredit',{opacity:credit,pointerEvents:credit>0.45?'auto':'none'});
+ gsap.set('.supplyh',{scale:1+p*0.04,opacity:1-p*0.22});
+}
+mm.add('(min-width:861px)',()=>{
+ const st=ScrollTrigger.create({trigger:'.supply',start:'top top',end:'bottom bottom',scrub:.45,invalidateOnRefresh:true,onUpdate:self=>placeShots(self.progress)});
+ placeShots(st.progress||0);
+ const onLoad=()=>{placeShots(st.progress||0)};
+ addEventListener('load',onLoad);
+ return()=>removeEventListener('load',onLoad);
+});
+mm.add('(max-width:860px)',()=>{
+ gsap.from('.supply .shot',{y:24,opacity:0,duration:.5,stagger:.06,ease:'power2.out',immediateRender:false,scrollTrigger:{trigger:'.supply',start:'top 86%'}});
+});
 })();
